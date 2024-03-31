@@ -2,7 +2,7 @@
 
 # Fungsi untuk menulis status koneksi ke file log.txt
 write_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: $1" >> /usr/bin/antibengong/log.txt
+    echo "$(date +"%A %d %B %Y %T")  Status: $1" >> /usr/antibengong/log.txt
 }
 
 # Fungsi untuk restart modem
