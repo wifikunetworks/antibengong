@@ -6,8 +6,6 @@ LOG_FILE="/usr/bin/antibengong/log.txt"
 # Function to log status
 log_status() {
     echo "$(date +"%A %d %B %Y %T")  Status: $1" >> "$LOG_FILE"
-    # Flush buffer
-    sync
 }
 
 # Function to restart modem
@@ -31,20 +29,11 @@ while true; do
         log_status "ONLINE"
     else
         log_status "OFFLINE"
-        # Sleep for 1 minute
-        sleep 60
-        # Check internet connectivity again after sleeping
-        if wget -q --spider http://www.gstatic.com/generate_204; then
-            log_status "ONLINE"
-        else
-            log_status "OFFLINE - Restarting modem and interface..."
-            # Restart modem
-            restart_modem
-            # Sleep for a few seconds before restarting interface
-            sleep 5
-            # Restart modem interface
-            restart_modem_interface
-        fi
+        # Restart modem and interface
+        log_status "OFFLINE - Restarting modem and interface..."
+        restart_modem
+        sleep 5
+        restart_modem_interface
     fi
     # Wait for 3 seconds before the next check
     sleep 3
