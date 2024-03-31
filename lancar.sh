@@ -1,68 +1,47 @@
 #!/bin/bash
 
-# Path untuk log file
-LOG_FILE="/usr/bin/antibengong/log.txt"
-
-# URL untuk dicek koneksi internet
-CHECK_URL="http://www.gstatic.com/generate_204"
-
-# Waktu interval pengecekan (dalam detik)
-CHECK_INTERVAL=3
-
-# Waktu maksimum tanpa koneksi sebelum restart (dalam detik)
-MAX_OFFLINE_TIME=60
-
-# Fungsi untuk menulis log
+# Fungsi untuk menulis status koneksi ke file log.txt
 write_log() {
-    echo "$(date '+%A %d %B %Y %H:%M:%S')  Status: $1" >> "$LOG_FILE"
+    echo "$(date +"%A %d %B %Y %T")  Status: $1" >> /usr/bin/antibengong/log.txt
 }
 
-# Fungsi untuk merestart modem
+# Fungsi untuk restart modem
 restart_modem() {
     echo "Restarting modem..."
-    # Ganti perintah berikut dengan perintah yang benar untuk merestart modem
-    # contoh: at+cfun=1,1 -p /dev/ttyACM2
-    at+cfun=1,1 -p /dev/ttyACM2
+    echo "at+cfun=1,1" > /dev/ttyACM2
 }
 
-# Fungsi untuk merestart interface modem
+# Fungsi untuk restart interface modem
 restart_modem_interface() {
     echo "Restarting modem interface..."
-    # Ganti perintah berikut dengan perintah yang benar untuk merestart interface modem
-    # contoh: ifdown mm && ifup mm
     ifdown mm && ifup mm
 }
 
-# Fungsi untuk memeriksa koneksi internet
-check_internet_connection() {
-    wget -q --spider "$CHECK_URL"
-    return $?
-}
-
-# Main loop
+# Loop untuk pengecekan koneksi setiap 3 detik
 while true; do
-    if check_internet_connection; then
+    # Cek koneksi internet dengan mengakses http://www.gstatic.com/generate_204
+    wget -q --spider http://www.gstatic.com/generate_204
+
+    # Periksa kode status HTTP dari permintaan sebelumnya
+    if [ $? -eq 0 ]; then
+        # Jika koneksi tersedia
         write_log "ONLINE"
     else
+        # Jika koneksi tidak tersedia
         write_log "OFFLINE"
-        offline_time=0
-
-        # Cek waktu offline
-        while [ "$offline_time" -lt "$MAX_OFFLINE_TIME" ]; do
-            sleep "$CHECK_INTERVAL"
-            offline_time=$((offline_time + CHECK_INTERVAL))
-            if check_internet_connection; then
-                write_log "ONLINE"
-                break
-            fi
-        done
-
-        # Jika waktu offline sudah mencapai batas maksimum, restart modem atau interface modem
-        if [ "$offline_time" -ge "$MAX_OFFLINE_TIME" ]; then
+        # Tunggu 1 menit untuk memeriksa kembali koneksi sebelum melakukan restart
+        sleep 57
+        wget -q --spider http://www.gstatic.com/generate_204
+        if [ $? -ne 0 ]; then
+            # Jika koneksi masih tidak tersedia setelah 1 menit, restart modem
             restart_modem
-            restart_modem_interface
+            sleep 10  # Tunggu 10 detik setelah restart modem
+            wget -q --spider http://www.gstatic.com/generate_204
+            if [ $? -ne 0 ]; then
+                # Jika koneksi masih tidak tersedia setelah restart modem, restart interface modem
+                restart_modem_interface
+            fi
         fi
     fi
-
-    sleep "$CHECK_INTERVAL"
+    sleep 3  # Tunggu 3 detik sebelum memeriksa koneksi lagi
 done
