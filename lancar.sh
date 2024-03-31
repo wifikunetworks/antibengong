@@ -2,7 +2,7 @@
 
 # Fungsi untuk menulis log
 write_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: $1" >> /etc/antibengong/log.txt
+    echo "$(date +"%A %d %B %Y %T")  Status: $1" >> /www/antibengong/log.txt
 }
 
 # Inisialisasi jumlah status offline berturut-turut
@@ -20,8 +20,8 @@ while true; do
         # Jika koneksi offline
         write_log "OFFLINE"
         ((offline_count++))
-        # Jika offline lebih dari 20 kali berturut-turut, restart modem dan interface
-        if [ $offline_count -ge 20 ]; then
+        # Jika offline lebih dari 10 kali berturut-turut, restart modem dan interface
+        if [ $offline_count -ge 10 ]; then
             write_log "Restart Modem & Interface"
             # Restart modem
             echo "at+cfun=1,1" > /dev/ttyACM2
@@ -31,6 +31,6 @@ while true; do
             offline_count=0
         fi
     fi
-    # Tunggu 3 detik
-    sleep 3
+    # Tunggu 5 detik
+    sleep 5
 done
