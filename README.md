@@ -7,5 +7,5 @@ wget --no-check-certificate -N -P /www/antibengong/ https://raw.githubuserconten
 COMPLETE VERSION
 ```
 # INSTALL ANTI BENGONG
-wget --no-check-certificate -N -P /www/antibengong/ https://raw.githubusercontent.com/wifikunetworks/antibengong/main/complete.sh && chmod +x /www/antibengong/complete.sh
+wget --no-check-certificate -N -P /www/antibengong/ https://raw.githubusercontent.com/wifikunetworks/antibengong/main/final.sh && chmod +x /www/antibengong/final.sh
 ```
