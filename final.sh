@@ -2,7 +2,7 @@
 
 # Fungsi untuk menulis log
 write_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: $1 $2" >> /www/antibengong/log.txt
+    echo "$(date +"%A %d %B %Y %T")  Status: $1 $2" >> /etc/modem/log.txt
 }
 
 # Fungsi untuk menunggu selama waktu yang ditentukan
