@@ -2,7 +2,7 @@
 
 # Fungsi untuk menulis log
 write_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: $1 $2" >> /etc/modem/log.txt
+    echo "$(date +"%A %d %B %Y %T")  Status: $1 $2" >> /www/antibengong/log.txt
 }
 
 # Fungsi untuk menunggu selama waktu yang ditentukan
@@ -18,6 +18,9 @@ offline_count=0
 
 # Interval waktu antara setiap pengecekan (detik)
 check_interval=5
+
+# Jumlah maksimum percobaan ulang
+max_retry=5
 
 # Loop utama
 while true; do
@@ -35,8 +38,8 @@ while true; do
         # Jika kode status bukan 204 (berarti koneksi offline)
         write_log "OFFLINE"
         ((offline_count++))
-        # Jika offline lebih dari 5 kali berturut-turut, restart modem dan interface
-        if [ $offline_count -ge 5 ]; then
+        # Jika offline lebih dari jumlah maksimum percobaan ulang, restart modem dan interface
+        if [ $offline_count -ge $max_retry ]; then
             write_log "OFFLINE" "> Action: Restart Modem"
             # Restart modem
             echo "at+cfun=1,1" > /dev/ttyACM2
