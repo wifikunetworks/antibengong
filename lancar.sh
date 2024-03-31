@@ -1,47 +1,43 @@
 #!/bin/bash
 
-# Fungsi untuk menulis status koneksi ke file log.txt
-write_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: $1" >> /usr/antibengong/log.txt
-}
+log_file="/usr/antibengong/log.txt"
+modem_port="/dev/ttyACM2"
+check_interval=3
+offline_threshold=20 # 20 * 3 detik = 60 detik (1 menit)
 
-# Fungsi untuk restart modem
 restart_modem() {
     echo "Restarting modem..."
-    echo "at+cfun=1,1" > /dev/ttyACM2
+    echo "at+cfun=1,1" > "$modem_port"
+    sleep 5
 }
 
-# Fungsi untuk restart interface modem
 restart_modem_interface() {
     echo "Restarting modem interface..."
     ifdown mm && ifup mm
+    sleep 5
 }
 
-# Loop untuk pengecekan koneksi setiap 3 detik
-while true; do
-    # Cek koneksi internet dengan mengakses http://www.gstatic.com/generate_204
-    wget -q --spider http://www.gstatic.com/generate_204
-
-    # Periksa kode status HTTP dari permintaan sebelumnya
-    if [ $? -eq 0 ]; then
-        # Jika koneksi tersedia
-        write_log "ONLINE"
+check_internet_connection() {
+    if wget -q --spider http://www.gstatic.com/generate_204; then
+        echo "$(date +'%A %d %B %Y %T')  Status: ONLINE" >> "$log_file"
     else
-        # Jika koneksi tidak tersedia
-        write_log "OFFLINE"
-        # Tunggu 1 menit untuk memeriksa kembali koneksi sebelum melakukan restart
-        sleep 57
-        wget -q --spider http://www.gstatic.com/generate_204
-        if [ $? -ne 0 ]; then
-            # Jika koneksi masih tidak tersedia setelah 1 menit, restart modem
-            restart_modem
-            sleep 10  # Tunggu 10 detik setelah restart modem
-            wget -q --spider http://www.gstatic.com/generate_204
-            if [ $? -ne 0 ]; then
-                # Jika koneksi masih tidak tersedia setelah restart modem, restart interface modem
-                restart_modem_interface
-            fi
-        fi
+        echo "$(date +'%A %d %B %Y %T')  Status: OFFLINE" >> "$log_file"
     fi
-    sleep 3  # Tunggu 3 detik sebelum memeriksa koneksi lagi
-done
+}
+
+main() {
+    while true; do
+        check_internet_connection
+        sleep $check_interval
+
+        # Check if offline for more than 1 minute
+        offline_count=$(grep -c "Status: OFFLINE" "$log_file")
+        if [[ $offline_count -ge $offline_threshold ]]; then
+            restart_modem
+            restart_modem_interface
+            echo "Internet connection restored after restarting modem and interface."
+        fi
+    done
+}
+
+main
