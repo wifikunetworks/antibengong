@@ -26,9 +26,12 @@ max_retry=5
 # Waktu awal untuk penulisan log
 next_log_minute=$(date +"%M")
 
+# Variabel untuk menyimpan status koneksi terakhir
+last_status=""
+
 # Loop utama
 while true; do
-    # Cek apakah sudah waktunya untuk menulis log
+    # Cek apakah sudah waktunya untuk menulis log atau tidak
     if [ "$(date +"%M")" = "$next_log_minute" ]; then
         # Waktu awal untuk pengecekan
         start_time=$(date +%s)
@@ -37,12 +40,16 @@ while true; do
         http_code=$(curl -s -o /dev/null -w "%{http_code}" http://www.gstatic.com/generate_204)
         if [ $http_code -eq 204 ]; then
             # Jika kode status 204 (berarti koneksi online)
-            offline_count=0
-            write_log "ONLINE"
+            if [ "$last_status" != "ONLINE" ]; then
+                offline_count=0
+                write_log "ONLINE"
+                last_status="ONLINE"
+            fi
         else
             # Jika kode status bukan 204 (berarti koneksi offline)
             ((offline_count++))
             write_log "OFFLINE" "Failed $offline_count out of $max_retry"
+            last_status="OFFLINE"
             # Jika offline lebih dari jumlah maksimum percobaan
             if [ $offline_count -ge $max_retry ]; then
                 write_log "OFFLINE" "Failed $offline_count out of $max_retry > Action: Restart Modem"
@@ -67,7 +74,12 @@ while true; do
         # Perbarui waktu untuk penulisan log selanjutnya
         next_log_minute=$(date +"%M")
     else
-        # Tunggu 1 detik sebelum melakukan pengecekan berikutnya
-        sleep 1
+        # Tunggu sesuai dengan interval waktu pengecekan
+        sleep $check_interval
+        
+        # Jika status terakhir kembali online, reset kembali offline count
+        if [ "$last_status" = "ONLINE" ]; then
+            offline_count=0
+        fi
     fi
 done
