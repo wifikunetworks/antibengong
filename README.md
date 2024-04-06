@@ -17,7 +17,7 @@ COMPLETE VERSION
 wget --no-check-certificate -N -P /www/antibengong/ https://raw.githubusercontent.com/wifikunetworks/antibengong/main/final.sh && chmod +x /www/antibengong/final.sh
 ```
 
-LITE VERSION
+LITE VERSION (RECOMENDED)
 ```
 # INSTALL ANTI BENGONG
 wget --no-check-certificate -N -P /www/antibengong/ https://raw.githubusercontent.com/wifikunetworks/antibengong/main/lite.sh && chmod +x /www/antibengong/lite.sh
