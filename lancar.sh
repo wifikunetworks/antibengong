@@ -46,7 +46,7 @@ while true; do
             wait_seconds 10
             write_log "OFFLINE" "> Action: Restart Interface"
             # Restart interface modem
-            ifdown mm && ifup mm
+            ifdown mm && sleep 5 && ifup mm
             wait_seconds 10
             # Reset offline count
             offline_count=0
