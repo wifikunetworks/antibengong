@@ -19,62 +19,61 @@ offline_count=0
 # Interval waktu antara setiap pengecekan (detik)
 check_interval=5
 
-# Interval waktu untuk menulis log (detik)
-log_interval=60
-
 # Variabel untuk menentukan jumlah maksimum percobaan koneksi offline sebelum melakukan restart modem dan interface
 max_retry=5
-
-# Waktu awal untuk pengecekan log
-log_timer=$(date +%s)
 
 # Loop utama
 while true; do
     # Waktu awal untuk pengecekan
     start_time=$(date +%s)
+
+    # Counter untuk pengecekan setiap 5 detik
+    check_counter=0
     
-    # Cek koneksi internet dengan mengambil kode status HTTP
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" http://www.gstatic.com/generate_204)
-    if [ $http_code -eq 204 ]; then
-        # Jika kode status 204 (berarti koneksi online)
-        write_log "ONLINE"
-        # Reset offline count
-        offline_count=0
-    else
-        # Jika kode status bukan 204 (berarti koneksi offline)
-        ((offline_count++))
-        write_log "OFFLINE" "Failed $offline_count out of $max_retry"
-        # Jika offline lebih dari jumlah maksimum percobaan
-        if [ $offline_count -ge $max_retry ]; then
-            write_log "OFFLINE" "Failed $offline_count out of $max_retry > Action: Restart Modem"
-            # Restart modem
-            echo "at+cfun=1,1" > /dev/ttyACM2
-            wait_seconds 10
-            write_log "OFFLINE" "Failed $offline_count out of $max_retry > Action: Restart Interface"
-            # Restart interface modem
-            ifdown mm && ifup mm
-            wait_seconds 10
+    # Loop untuk pengecekan koneksi internet setiap 5 detik
+    while [ $check_counter -lt 12 ]; do
+        # Cek koneksi internet dengan mengambil kode status HTTP
+        http_code=$(curl -s -o /dev/null -w "%{http_code}" http://www.gstatic.com/generate_204)
+        if [ $http_code -eq 204 ]; then
+            # Jika kode status 204 (berarti koneksi online)
+            write_log "ONLINE"
             # Reset offline count
             offline_count=0
+        else
+            # Jika kode status bukan 204 (berarti koneksi offline)
+            ((offline_count++))
+            write_log "OFFLINE" "Failed $offline_count out of $max_retry"
+            # Jika offline lebih dari jumlah maksimum percobaan
+            if [ $offline_count -ge $max_retry ]; then
+                write_log "OFFLINE" "Failed $offline_count out of $max_retry > Action: Restart Modem"
+                # Restart modem
+                echo "at+cfun=1,1" > /dev/ttyACM2
+                wait_seconds 10
+                write_log "OFFLINE" "Failed $offline_count out of $max_retry > Action: Restart Interface"
+                # Restart interface modem
+                ifdown mm && ifup mm
+                wait_seconds 10
+                # Reset offline count
+                offline_count=0
+            fi
         fi
-    fi
-    
+        # Tunggu selama 5 detik sebelum pengecekan selanjutnya
+        wait_seconds $check_interval
+        ((check_counter++))
+    done
+
     # Waktu akhir untuk pengecekan
     end_time=$(date +%s)
     
+    # Tambahkan log "STATUS: Log written per minute" sekali setiap menit
+    write_log "STATUS" "Log written per minute"
+
     # Hitung sisa waktu sebelum melakukan pengecekan berikutnya
-    remaining_time=$((check_interval - (end_time - start_time)))
+    remaining_time=$((60 - (end_time - start_time)))
     
     # Tunggu hingga waktunya untuk melakukan pengecekan berikutnya
     while [ $remaining_time -gt 0 ]; do
         sleep 1
         remaining_time=$((remaining_time - 1))
     done
-    
-    # Cek apakah sudah saatnya menulis log
-    current_time=$(date +%s)
-    if [ $((current_time - log_timer)) -ge $log_interval ]; then
-        write_log "STATUS" "Log written per minute"
-        log_timer=$((log_timer + log_interval))  # Update waktu terakhir penulisan log
-    fi
 done
