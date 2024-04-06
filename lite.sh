@@ -2,12 +2,12 @@
 
 # Fungsi untuk menulis log saat status koneksi OFFLINE
 write_offline_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: OFFLINE $1" >> /etc/modem/log.txt
+    echo "$(date +"%A %d %B %Y %T") Status: OFFLINE $1" >> /etc/modem/log.txt
 }
 
 # Fungsi untuk menulis log saat status koneksi ONLINE
 write_online_log() {
-    echo "$(date +"%A %d %B %Y %T")  Status: ONLINE" >> /etc/modem/log.txt
+    echo "$(date +"%A %d %B %Y %T") Status: ONLINE" >> /etc/modem/log.txt
 }
 
 # Fungsi untuk menunggu selama waktu yang ditentukan
