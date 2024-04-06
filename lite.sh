@@ -75,6 +75,6 @@ while true; do
     current_time=$(date +%s)
     if [ $((current_time - log_timer)) -ge $log_interval ]; then
         write_log "STATUS" "Log written per minute"
-        log_timer=$current_time
+        log_timer=$((log_timer + log_interval))  # Update waktu terakhir penulisan log
     fi
 done
