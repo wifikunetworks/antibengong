@@ -26,7 +26,7 @@ while true; do
             # Restart modem
             echo "at+cfun=1,1" > /dev/ttyACM2
             # Restart interface modem
-            ifdown mm && ifup mm
+            ifdown mm && sleep 5 && ifup mm
             # Reset offline count
             offline_count=0
         fi
