@@ -5,7 +5,7 @@ url_to_check="http://www.gstatic.com/generate_204"
 offline_count=0
 
 restart_modem_command="echo 'at+cfun=1,1' > /dev/ttyACM2"
-restart_interface_command="ifdown mm && ifup mm"
+restart_interface_command="ifdown mm && sleep 5 && ifup mm"
 
 while true; do
     timestamp=$(date +"%A %d %B %Y %T")
