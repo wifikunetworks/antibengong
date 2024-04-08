@@ -36,6 +36,9 @@ max_retry=5
 # Waktu awal untuk penulisan log saat status koneksi ONLINE
 next_online_log_time=$(date +%s)
 
+# Variabel untuk menyimpan perintah untuk restart modem
+restart_modem_command="echo \"at+cfun=1,1\" > /dev/ttyACM2"
+
 # Loop utama
 while true; do
     # Waktu awal untuk pengecekan
@@ -58,7 +61,7 @@ while true; do
         if [ $offline_count -ge $max_retry ]; then
             write_offline_log "Failed $offline_count out of $max_retry > Action: Restart Modem"
             # Restart modem
-            echo "at+cfun=1,1" > /dev/ttyACM2
+            $restart_modem_command
             wait_seconds 10
             write_offline_log "Failed $offline_count out of $max_retry > Action: Restart Interface"
             # Restart interface modem
