@@ -37,7 +37,7 @@ max_retry=5
 next_online_log_time=$(date +%s)
 
 # Variabel untuk menyimpan perintah untuk restart modem
-restart_modem_command="echo \"at+cfun=1,1\" > /dev/ttyACM2"
+restart_modem_command='echo \"at+cfun=1,1\" > /dev/ttyACM2'
 
 # Loop utama
 while true; do
