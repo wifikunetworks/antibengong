@@ -31,13 +31,13 @@ while true; do
     http_code=$(curl -s -o /dev/null -w "%{http_code}" http://www.gstatic.com/generate_204)
     if [ $http_code -eq 204 ]; then
         # Jika kode status 204 (berarti koneksi online)
-        write_log "ONLINE"
+        write_log "HIDUP"
         # Reset offline count
         offline_count=0
     else
         # Jika kode status bukan 204 (berarti koneksi offline)
         ((offline_count++))
-        write_log "OFFLINE" "Failed $offline_count out of $max_retry"
+        write_log "MATI" "Failed $offline_count out of $max_retry"
         # Jika offline lebih dari jumlah maksimum percobaan
         if [ $offline_count -ge $max_retry ]; then
             write_log "OFFLINE" "Failed $offline_count out of $max_retry > Action: Restart Modem"
